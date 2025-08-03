@@ -1,6 +1,7 @@
 package com.dealerapp.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -61,17 +62,24 @@ public class MainController {
     private TableColumn<Car, String> driveTypeColumn, colorColumn;
 
     // Define the column for Motorcycle specific attributes
-    // @FXML
-    // private TableColumn<Motorcycle, String> motorcycleTypeColumn;
-    // @FXML
-    // private TableColumn<Motorcycle, Integer> engineCapacityColumn;
-    // @FXML
-    // private TableColumn<Motorcycle, Boolean> hasABSColumn, isA2CompatibleColumn;
+    @FXML
+    private TableColumn<Motorcycle, String> motorcycleTypeColumn;
+    @FXML
+    private TableColumn<Motorcycle, Integer> engineCapacityColumn;
+    @FXML
+    private TableColumn<Motorcycle, Boolean> hasABSColumn, isA2CompatibleColumn;
 
     private void hideCarColumns() {
         numberOfDoorsColumn.setVisible(false);
         driveTypeColumn.setVisible(false);
         colorColumn.setVisible(false);
+    }
+
+    private void hideMotorcycleColumns() {
+        motorcycleTypeColumn.setVisible(false);
+        engineCapacityColumn.setVisible(false);
+        hasABSColumn.setVisible(false);
+        isA2CompatibleColumn.setVisible(false);
     }
 
     @FXML
@@ -123,20 +131,49 @@ public class MainController {
         colorColumn.setVisible(false);
 
         // Initialize Motorcycle specific columns
-        // motorcycleTypeColumn.setCellValueFactory(new
-        // PropertyValueFactory<>("bikeType"));
-        // motorcycleTypeColumn.setVisible(false);
+        motorcycleTypeColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Motorcycle) {
+                Motorcycle m = (Motorcycle) v;
+                return new ReadOnlyStringWrapper(m.getBikeType());
+            } else {
+                return new ReadOnlyStringWrapper(""); // Default value if not a Motorcycle
+            }
+        });
+        motorcycleTypeColumn.setVisible(false);
 
-        // engineCapacityColumn.setCellValueFactory(new
-        // PropertyValueFactory<>("engineCapacity"));
-        // engineCapacityColumn.setVisible(false);
+        engineCapacityColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Motorcycle) {
+                Motorcycle m = (Motorcycle) v;
+                return new ReadOnlyIntegerWrapper(m.getEngineCapacity()).asObject();
+            } else {
+                return new ReadOnlyIntegerWrapper(0).asObject(); // Default value if not a Motorcycle
+            }
+        });
+        engineCapacityColumn.setVisible(false);
 
-        // hasABSColumn.setCellValueFactory(new PropertyValueFactory<>("hasABS"));
-        // hasABSColumn.setVisible(false);
+        hasABSColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Motorcycle) {
+                Motorcycle m = (Motorcycle) v;
+                return new ReadOnlyBooleanWrapper(m.hasABS()).asObject();
+            } else {
+                return new ReadOnlyBooleanWrapper(false).asObject(); // Default value if not a Motorcycle
+            }
+        });
+        hasABSColumn.setVisible(false);
 
-        // isA2CompatibleColumn.setCellValueFactory(new
-        // PropertyValueFactory<>("isA2Compatible"));
-        // isA2CompatibleColumn.setVisible(false);
+        isA2CompatibleColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Motorcycle) {
+                Motorcycle m = (Motorcycle) v;
+                return new ReadOnlyBooleanWrapper(m.isA2Compatible()).asObject();
+            } else {
+                return new ReadOnlyBooleanWrapper(false).asObject(); // Default value if not a Motorcycle
+            }
+        });
+        isA2CompatibleColumn.setVisible(false);
 
         // Hide the table initially
         vehicleTable.setVisible(false);
@@ -214,6 +251,7 @@ public class MainController {
                 // No filter applied, skip this vehicle type filter and hide Car specific
                 // columns
                 hideCarColumns();
+                hideMotorcycleColumns();
             } else if (selectedType != null && !selectedType.isEmpty() && !selectedType.equals("ANY")) {
                 allVehicles = allVehicles.stream()
                         .filter(v -> v.getType().equalsIgnoreCase(selectedType))
@@ -223,9 +261,18 @@ public class MainController {
                     numberOfDoorsColumn.setVisible(true);
                     driveTypeColumn.setVisible(true);
                     colorColumn.setVisible(true);
-                } else {
+
+                    // Hide Motorcycle specific columns
+                    hideMotorcycleColumns();
+                } else if (selectedType.equals("MOTORCYCLE")) {
                     // Hide Car specific columns
                     hideCarColumns();
+
+                    // Show Motorcycle specific columns
+                    motorcycleTypeColumn.setVisible(true);
+                    engineCapacityColumn.setVisible(true);
+                    hasABSColumn.setVisible(true);
+                    isA2CompatibleColumn.setVisible(true);
                 }
             }
         } catch (Exception e) {
@@ -387,7 +434,8 @@ public class MainController {
         vehicleTable.setVisible(true);
         vehicleTable.setManaged(true);
 
-        // Hide Car specific columns initially
+        // Hide Car and Motorcycle specific columns initially
         hideCarColumns();
+        hideMotorcycleColumns();
     }
 }

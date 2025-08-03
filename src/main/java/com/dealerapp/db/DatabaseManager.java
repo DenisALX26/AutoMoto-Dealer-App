@@ -15,7 +15,7 @@ public class DatabaseManager {
 
     public static List<Vehicle> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
-        String query = "SELECT v.*, c.drive_type, c.color, c.number_of_doors, m.engine_capacity, m.has_abs, m.is_a2_compatible, m.type from vehicle v left join car c on v.id = c.id left join motorcycle m on v.id = m.id order by v.id";
+        String query = "SELECT v.*, c.drive_type, c.color, c.number_of_doors, m.engine_capacity, m.has_abs, m.is_a2_compatible, m.motorcycle_type from vehicle v left join car c on v.id = c.id left join motorcycle m on v.id = m.id order by v.id";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
                 Statement statement = connection.createStatement();
@@ -47,7 +47,7 @@ public class DatabaseManager {
                             resultSet.getInt("mileage"),
                             resultSet.getInt("power"),
                             resultSet.getInt("torque"),
-                            resultSet.getString("type"),
+                            resultSet.getString("motorcycle_type"),
                             resultSet.getInt("engine_capacity"),
                             resultSet.getBoolean("has_abs"),
                             resultSet.getBoolean("is_a2_compatible")));
