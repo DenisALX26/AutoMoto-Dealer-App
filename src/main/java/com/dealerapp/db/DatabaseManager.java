@@ -84,16 +84,16 @@ public class DatabaseManager {
         return employees;
     }
 
-    public static List<Integer> getEmployeesCommissions() {
-        List<Integer> commissions = new ArrayList<>();
+    public static List<Double> getEmployeesCommissions() {
+        List<Double> commissions = new ArrayList<>();
 
-        String query = "SELECT commission FROM EMPLOYEE WHERE job_title = 'SALES'";
+        String query = "SELECT commission FROM EMPLOYEE order by id";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
-                commissions.add(resultSet.getInt("commission"));
+                commissions.add(resultSet.getDouble("commission"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -264,5 +264,14 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return orders;
+    }
+
+    public static List<String> getEmployeesNames() {
+        List<String> employeesNames = new ArrayList<>();
+        List<Employee> employees = getEmployees();
+        for (Employee employee : employees) {
+            employeesNames.add(employee.getFirstName() + " " + employee.getLastName());
+        }
+        return employeesNames;
     }
 }

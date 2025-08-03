@@ -132,6 +132,25 @@ public class MainController {
         orderTable.setManaged(false);
     }
 
+    // Update the total price field based on the vehicle price and employee's
+    // commission
+    private void updateTotalPrice() {
+        if (vehicleIDField.getText() != null && !vehicleIDField.getText().isEmpty()) {
+            int vehicleID = Integer.parseInt(vehicleIDField.getText());
+            double price = DatabaseManager.getVehiclePrice(vehicleID);
+            vehiclePriceField.setText(String.valueOf(price));
+
+            // Set the total price field based on the vehicle price and employee's
+            // commission
+            if (commissionField.getText() != null && !commissionField.getText().isEmpty()) {
+                String commissionText = commissionField.getText().replace("%", "");
+                double commission = Double.parseDouble(commissionText);
+                double totalPrice = price + (price * (commission / 100));
+                totalPriceField.setText(String.valueOf(totalPrice));
+            }
+        }
+    }
+
     @FXML
     private void initialize() {
         // Initialize the Vehicle TableView columns
@@ -274,42 +293,31 @@ public class MainController {
         showOrdersBtn.setOnAction(this::showOrders);
 
         // Load the employees into the ChoiceBox
-        // List<Employee> employees = DatabaseManager.getEmployees();
-        // employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
-        // employeesChoiceBox.setValue("Select Employee");
+        List<String> employees = DatabaseManager.getEmployeesNames();
+        employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
+        employeesChoiceBox.setValue("Select Employee");
 
         // Set the commission field with the choiced employee's commission
-        // employeesChoiceBox.setOnAction(event -> {
-        // String selectedEmployee = employeesChoiceBox.getValue();
-        // if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
-        // int index = employees.indexOf(selectedEmployee);
-        // List<Integer> commissions = DatabaseManager.getEmployeesCommissions();
-        // if (index >= 0 && index < commissions.size()) {
-        // commissionField.setText(String.valueOf(commissions.get(index)) + "%");
-        // } else {
-        // commissionField.setText("N/A");
-        // }
-        // } else {
-        // commissionField.setText("N/A");
-        // }
-        // });
+        employeesChoiceBox.setOnAction(event -> {
+            String selectedEmployee = employeesChoiceBox.getValue();
+            if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
+                int index = employees.indexOf(selectedEmployee);
+                List<Double> commissions = DatabaseManager.getEmployeesCommissions();
+                if (index >= 0 && index < commissions.size()) {
+                    commissionField.setText(String.valueOf(commissions.get(index)) + "%");
+                    // Update the total price field based on the selected employee's commission
+                    updateTotalPrice();
+                } else {
+                    commissionField.setText("N/A");
+                }
+            } else {
+                commissionField.setText("N/A");
+            }
+        });
 
         // Set the vehicle price field with the selected vehicle's id
         vehicleIDField.setOnAction(event -> {
-            if (vehicleIDField.getText() != null && !vehicleIDField.getText().isEmpty()) {
-                int vehicleID = Integer.parseInt(vehicleIDField.getText());
-                double price = DatabaseManager.getVehiclePrice(vehicleID);
-                vehiclePriceField.setText(String.valueOf(price));
-
-                // Set the total price field based on the vehicle price and employee's
-                // commission
-                if (commissionField.getText() != null && !commissionField.getText().isEmpty()) {
-                    String commissionText = commissionField.getText().replace("%", "");
-                    double commission = Double.parseDouble(commissionText);
-                    double totalPrice = price + (price * (commission / 100));
-                    totalPriceField.setText(String.valueOf(totalPrice));
-                }
-            }
+            updateTotalPrice();
         });
 
         // Set the focus on the "Show All" button when the application starts
