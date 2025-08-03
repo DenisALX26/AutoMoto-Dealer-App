@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dealerapp.model.Car;
+import com.dealerapp.model.Customer;
 import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
 import com.dealerapp.model.Vehicle;
@@ -217,5 +218,27 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return motorcycles;
+    }
+
+    public static List<Customer> getAllCustomers() {
+        List<Customer> customers = new ArrayList<>();
+        String query = "SELECT * FROM CUSTOMER ORDER BY cnp";
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            while (resultSet.next()) {
+                Customer customer = new Customer(
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("email"),
+                        resultSet.getString("phone"),
+                        resultSet.getString("cnp"));
+                customers.add(customer);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return customers;
     }
 }

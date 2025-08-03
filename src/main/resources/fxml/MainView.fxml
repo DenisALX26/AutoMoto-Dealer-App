@@ -111,6 +111,7 @@
                <children>
                   <Button fx:id="showAllBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Vehicles" />
                   <Button fx:id="showEmployeesBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Employees" />
+                  <Button fx:id="showCustomersBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Customers" />
                </children>
             </VBox>
             <Region prefWidth="150.0" />
@@ -170,13 +171,25 @@
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                </columnResizePolicy>
             </TableView>
-            <TableView fx:id="employeeTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+            <TableView fx:id="employeeTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="910.0">
               <columns>
                 <TableColumn fx:id="employeeIdColumn" prefWidth="75.0" text="ID" />
                 <TableColumn fx:id="firstNameColumn" prefWidth="75.0" text="First Name" />
                   <TableColumn fx:id="lastNameColumn" prefWidth="75.0" text="Last Name" />
                   <TableColumn fx:id="commissionColumn" prefWidth="75.0" text="Commission" />
                   <TableColumn fx:id="hireDateColumn" prefWidth="75.99998168945314" text="Hire Date" />
+              </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+            <TableView fx:id="customerTable" prefHeight="400.0" prefWidth="908.0">
+              <columns>
+                <TableColumn fx:id="customerCnpColumn" prefWidth="75.0" text="CNP" />
+                <TableColumn fx:id="customerFirstNameColumn" prefWidth="75.0" text="First Name" />
+                  <TableColumn fx:id="customerLastNameColumn" prefWidth="75.0" text="Last Name" />
+                  <TableColumn fx:id="customerEmailColumn" prefWidth="75.0" text="Email" />
+                  <TableColumn fx:id="customerPhoneColumn" prefWidth="75.0" text="Phone" />
               </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
