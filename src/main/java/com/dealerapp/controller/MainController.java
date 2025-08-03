@@ -1,6 +1,8 @@
 package com.dealerapp.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,6 +43,8 @@ public class MainController {
     private ChoiceBox<String> employeesChoiceBox;
     @FXML
     private CheckBox newCustomerCheckBox;
+    @FXML
+    private TableView<Car> carTable;
 
     // Define the columns in the TableView
     @FXML
@@ -57,12 +61,18 @@ public class MainController {
     private TableColumn<Car, String> driveTypeColumn, colorColumn;
 
     // Define the column for Motorcycle specific attributes
-    @FXML
-    private TableColumn<Motorcycle, String> motorcycleTypeColumn;
-    @FXML
-    private TableColumn<Motorcycle, Integer> engineCapacityColumn;
-    @FXML
-    private TableColumn<Motorcycle, Boolean> hasABSColumn, isA2CompatibleColumn;
+    // @FXML
+    // private TableColumn<Motorcycle, String> motorcycleTypeColumn;
+    // @FXML
+    // private TableColumn<Motorcycle, Integer> engineCapacityColumn;
+    // @FXML
+    // private TableColumn<Motorcycle, Boolean> hasABSColumn, isA2CompatibleColumn;
+
+    private void hideCarColumns() {
+        numberOfDoorsColumn.setVisible(false);
+        driveTypeColumn.setVisible(false);
+        colorColumn.setVisible(false);
+    }
 
     @FXML
     private void initialize() {
@@ -79,27 +89,54 @@ public class MainController {
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
 
         // Initialize Car specific columns and hide them initially
-        numberOfDoorsColumn.setCellValueFactory(new PropertyValueFactory<>("numberOfDoors"));
+        numberOfDoorsColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Car) {
+                Car c = (Car) v;
+                return new ReadOnlyIntegerWrapper(c.getNumberOfDoors()).asObject();
+            } else {
+                return new ReadOnlyIntegerWrapper(0).asObject(); // Default value if not a Car
+            }
+        });
         numberOfDoorsColumn.setVisible(false);
 
-        driveTypeColumn.setCellValueFactory(new PropertyValueFactory<>("driveType"));
+        driveTypeColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Car) {
+                Car c = (Car) v;
+                return new ReadOnlyStringWrapper(c.getDriveType());
+            } else {
+                return new ReadOnlyStringWrapper(""); // Default value if not a Car
+            }
+        });
         driveTypeColumn.setVisible(false);
 
-        colorColumn.setCellValueFactory(new PropertyValueFactory<>("color"));
+        colorColumn.setCellValueFactory(cd -> {
+            Vehicle v = cd.getValue();
+            if (v instanceof Car) {
+                Car c = (Car) v;
+                return new ReadOnlyStringWrapper(c.getColor());
+            } else {
+                return new ReadOnlyStringWrapper(""); // Default value if not a Car
+            }
+        });
         colorColumn.setVisible(false);
 
         // Initialize Motorcycle specific columns
-        motorcycleTypeColumn.setCellValueFactory(new PropertyValueFactory<>("bikeType"));
-        motorcycleTypeColumn.setVisible(false);
+        // motorcycleTypeColumn.setCellValueFactory(new
+        // PropertyValueFactory<>("bikeType"));
+        // motorcycleTypeColumn.setVisible(false);
 
-        engineCapacityColumn.setCellValueFactory(new PropertyValueFactory<>("engineCapacity"));
-        engineCapacityColumn.setVisible(false);
+        // engineCapacityColumn.setCellValueFactory(new
+        // PropertyValueFactory<>("engineCapacity"));
+        // engineCapacityColumn.setVisible(false);
 
-        hasABSColumn.setCellValueFactory(new PropertyValueFactory<>("hasABS"));
-        hasABSColumn.setVisible(false);
+        // hasABSColumn.setCellValueFactory(new PropertyValueFactory<>("hasABS"));
+        // hasABSColumn.setVisible(false);
 
-        isA2CompatibleColumn.setCellValueFactory(new PropertyValueFactory<>("isA2Compatible"));
-        isA2CompatibleColumn.setVisible(false);
+        // isA2CompatibleColumn.setCellValueFactory(new
+        // PropertyValueFactory<>("isA2Compatible"));
+        // isA2CompatibleColumn.setVisible(false);
 
         // Hide the table initially
         vehicleTable.setVisible(false);
@@ -174,15 +211,22 @@ public class MainController {
         try {
             String selectedType = typeFilter.getValue();
             if (selectedType.equals("ANY") || selectedType == null || selectedType.isEmpty()) {
-                // No filter applied, skip this vehicle type filter
+                // No filter applied, skip this vehicle type filter and hide Car specific
+                // columns
+                hideCarColumns();
             } else if (selectedType != null && !selectedType.isEmpty() && !selectedType.equals("ANY")) {
                 allVehicles = allVehicles.stream()
                         .filter(v -> v.getType().equalsIgnoreCase(selectedType))
                         .collect(Collectors.toList());
-            } else if (selectedType != null && !selectedType.isEmpty()) {
-                allVehicles = allVehicles.stream()
-                        .filter(v -> v.getType().equalsIgnoreCase(selectedType))
-                        .collect(Collectors.toList());
+                if (selectedType.equals("CAR")) {
+                    // Show Car specific columns
+                    numberOfDoorsColumn.setVisible(true);
+                    driveTypeColumn.setVisible(true);
+                    colorColumn.setVisible(true);
+                } else {
+                    // Hide Car specific columns
+                    hideCarColumns();
+                }
             }
         } catch (Exception e) {
         }
@@ -342,5 +386,8 @@ public class MainController {
         vehicleTable.setItems(FXCollections.observableArrayList(DatabaseManager.getAllVehicles()));
         vehicleTable.setVisible(true);
         vehicleTable.setManaged(true);
+
+        // Hide Car specific columns initially
+        hideCarColumns();
     }
 }

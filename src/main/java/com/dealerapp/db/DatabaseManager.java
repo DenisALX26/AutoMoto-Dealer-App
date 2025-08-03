@@ -15,23 +15,43 @@ public class DatabaseManager {
 
     public static List<Vehicle> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
+        String query = "SELECT v.*, c.drive_type, c.color, c.number_of_doors, m.engine_capacity, m.has_abs, m.is_a2_compatible, m.type from vehicle v left join car c on v.id = c.id left join motorcycle m on v.id = m.id order by v.id";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
                 Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT * FROM VEHICLE ORDER BY id")) {
+                ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
-                Vehicle v = new Vehicle(
-                        resultSet.getInt("id"),
-                        resultSet.getString("make"),
-                        resultSet.getString("model"),
-                        resultSet.getString("engine"),
-                        resultSet.getInt("year"),
-                        resultSet.getDouble("price"),
-                        resultSet.getInt("mileage"),
-                        resultSet.getInt("power"),
-                        resultSet.getInt("torque"),
-                        resultSet.getString("type"));
-                vehicles.add(v);
+                if (resultSet.getString("type").equals("CAR")) {
+                    vehicles.add(new Car(
+                            resultSet.getInt("id"),
+                            resultSet.getString("make"),
+                            resultSet.getString("model"),
+                            resultSet.getString("engine"),
+                            resultSet.getInt("year"),
+                            resultSet.getDouble("price"),
+                            resultSet.getInt("mileage"),
+                            resultSet.getInt("power"),
+                            resultSet.getInt("torque"),
+                            resultSet.getString("type"),
+                            resultSet.getInt("number_of_doors"),
+                            resultSet.getString("drive_type"),
+                            resultSet.getString("color")));
+                } else if (resultSet.getString("type").equals("MOTORCYCLE")) {
+                    vehicles.add(new Motorcycle(
+                            resultSet.getInt("id"),
+                            resultSet.getString("make"),
+                            resultSet.getString("model"),
+                            resultSet.getString("engine"),
+                            resultSet.getInt("year"),
+                            resultSet.getDouble("price"),
+                            resultSet.getInt("mileage"),
+                            resultSet.getInt("power"),
+                            resultSet.getInt("torque"),
+                            resultSet.getString("type"),
+                            resultSet.getInt("engine_capacity"),
+                            resultSet.getBoolean("has_abs"),
+                            resultSet.getBoolean("is_a2_compatible")));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
