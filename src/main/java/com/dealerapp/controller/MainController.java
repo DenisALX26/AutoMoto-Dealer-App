@@ -23,6 +23,7 @@ import com.dealerapp.model.Car;
 import com.dealerapp.model.Customer;
 import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
+import com.dealerapp.model.Order;
 import com.dealerapp.model.Vehicle;
 import com.dealerapp.db.DatabaseManager;
 
@@ -39,7 +40,7 @@ public class MainController {
     @FXML
     private ComboBox<String> engineFilter, typeFilter;
     @FXML
-    private Button showAllBtn, filterBtn, createOrderBtn, showEmployeesBtn, showCustomersBtn;
+    private Button showAllBtn, filterBtn, createOrderBtn, showEmployeesBtn, showCustomersBtn, showOrdersBtn;
     @FXML
     private TableView<Vehicle> vehicleTable;
     @FXML
@@ -50,6 +51,8 @@ public class MainController {
     private TableView<Employee> employeeTable;
     @FXML
     private TableView<Customer> customerTable;
+    @FXML
+    private TableView<Order> orderTable;
 
     // Define the columns in the Vehicle TableView
     @FXML
@@ -86,6 +89,15 @@ public class MainController {
     private TableColumn<Customer, String> customerFirstNameColumn, customerLastNameColumn,
             customerEmailColumn, customerPhoneColumn, customerCnpColumn;
 
+    // Define the columns for Order TableView
+    @FXML
+    private TableColumn<Order, Integer> orderIdColumn, employeeIdOrderColumn;
+    @FXML
+    private TableColumn<Order, String> customerCnpOrderColumn, statusColumn, orderDateColumn;
+    @FXML
+    private TableColumn<Order, Double> totalPriceColumn;
+
+    // Methods to hide specific columns based on vehicle type
     private void hideCarColumns() {
         numberOfDoorsColumn.setVisible(false);
         driveTypeColumn.setVisible(false);
@@ -99,6 +111,7 @@ public class MainController {
         isA2CompatibleColumn.setVisible(false);
     }
 
+    // Methods to hide the Vehicle, Employee, Customer and Order tables
     private void hideVehicleTable() {
         vehicleTable.setVisible(false);
         vehicleTable.setManaged(false);
@@ -112,6 +125,11 @@ public class MainController {
     private void hideCustomerTable() {
         customerTable.setVisible(false);
         customerTable.setManaged(false);
+    }
+
+    private void hideOrderTable() {
+        orderTable.setVisible(false);
+        orderTable.setManaged(false);
     }
 
     @FXML
@@ -230,6 +248,17 @@ public class MainController {
         // Hide the customer table initially
         hideCustomerTable();
 
+        // Initialize the Order TableView columns
+        orderIdColumn.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+        employeeIdOrderColumn.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        customerCnpOrderColumn.setCellValueFactory(new PropertyValueFactory<>("customerCnp"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        orderDateColumn.setCellValueFactory(new PropertyValueFactory<>("orderDate"));
+        totalPriceColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
+
+        // Hide the order table initially
+        hideOrderTable();
+
         // Set the options for the engine filter
         engineFilter.getItems().addAll("ANY", "PETROL", "DIESEL", "ELECTRIC", "HYBRID");
 
@@ -242,6 +271,7 @@ public class MainController {
         createOrderBtn.setOnAction(this::handleCreateOrder);
         showEmployeesBtn.setOnAction(this::showEmployees);
         showCustomersBtn.setOnAction(this::showCustomers);
+        showOrdersBtn.setOnAction(this::showOrders);
 
         // Load the employees into the ChoiceBox
         // List<Employee> employees = DatabaseManager.getEmployees();
@@ -297,9 +327,10 @@ public class MainController {
     private void handleFilter(ActionEvent event) {
         List<Vehicle> allVehicles = DatabaseManager.getAllVehicles();
 
-        // Hide the employee and customer table
+        // Hide Tables
         hideEmployeeTable();
         hideCustomerTable();
+        hideOrderTable();
 
         // Filter by vehicle type
         try {
@@ -491,7 +522,8 @@ public class MainController {
         employeeTable.setVisible(true);
         employeeTable.setManaged(true);
 
-        // Hide Vehicle Table
+        // Hide Tables
+        hideOrderTable();
         hideVehicleTable();
         hideCustomerTable();
     }
@@ -506,9 +538,10 @@ public class MainController {
         hideCarColumns();
         hideMotorcycleColumns();
 
-        // Hide Employee and Customer Table
+        // Hide Tables
         hideEmployeeTable();
         hideCustomerTable();
+        hideOrderTable();
     }
 
     @FXML
@@ -517,10 +550,21 @@ public class MainController {
         customerTable.setVisible(true);
         customerTable.setManaged(true);
 
-        // Hide Vehicle Table
+        // Hide Tables
         hideVehicleTable();
-
-        // Hide Employee Table
         hideEmployeeTable();
+        hideOrderTable();
+    }
+
+    @FXML
+    private void showOrders(ActionEvent event) {
+        orderTable.setItems(FXCollections.observableArrayList(DatabaseManager.getAllOrders()));
+        orderTable.setVisible(true);
+        orderTable.setManaged(true);
+
+        // Hide Tables
+        hideVehicleTable();
+        hideEmployeeTable();
+        hideCustomerTable();
     }
 }

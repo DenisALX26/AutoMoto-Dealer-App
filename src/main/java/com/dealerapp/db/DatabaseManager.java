@@ -8,6 +8,7 @@ import com.dealerapp.model.Car;
 import com.dealerapp.model.Customer;
 import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
+import com.dealerapp.model.Order;
 import com.dealerapp.model.Vehicle;
 
 public class DatabaseManager {
@@ -240,5 +241,28 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return customers;
+    }
+
+    public static List<Order> getAllOrders() {
+        List<Order> orders = new ArrayList<>();
+        String query = "SELECT * FROM Order_Table ORDER BY id";
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            while (resultSet.next()) {
+                Order order = new Order(
+                        resultSet.getInt("id"),
+                        resultSet.getInt("employee_id"),
+                        resultSet.getString("customer_cnp"),
+                        resultSet.getString("status"),
+                        resultSet.getString("order_date"),
+                        resultSet.getDouble("total_amount"));
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
     }
 }
