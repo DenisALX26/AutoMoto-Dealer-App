@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dealerapp.model.Car;
+import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
 import com.dealerapp.model.Vehicle;
 
@@ -59,16 +60,21 @@ public class DatabaseManager {
         return vehicles;
     }
 
-    public static List<String> getSalesEmployees() {
-        List<String> employees = new ArrayList<>();
+    public static List<Employee> getEmployees() {
+        List<Employee> employees = new ArrayList<>();
 
-        String query = "SELECT first_name || ' ' || last_name AS full_name FROM EMPLOYEE WHERE job_title = 'SALES'";
+        String query = "SELECT * FROM EMPLOYEE order by id";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
-                employees.add(resultSet.getString("full_name"));
+                employees.add(new Employee(
+                        resultSet.getInt("id"),
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getDouble("commission"),
+                        resultSet.getString("hire_date")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
