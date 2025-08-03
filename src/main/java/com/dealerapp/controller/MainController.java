@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.dealerapp.model.Car;
+import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
 import com.dealerapp.model.Vehicle;
 import com.dealerapp.db.DatabaseManager;
@@ -37,7 +38,7 @@ public class MainController {
     @FXML
     private ComboBox<String> engineFilter, typeFilter;
     @FXML
-    private Button showAllBtn, filterBtn, createOrderBtn;
+    private Button showAllBtn, filterBtn, createOrderBtn, showEmployeesBtn;
     @FXML
     private TableView<Vehicle> vehicleTable;
     @FXML
@@ -45,9 +46,9 @@ public class MainController {
     @FXML
     private CheckBox newCustomerCheckBox;
     @FXML
-    private TableView<Car> carTable;
+    private TableView<Employee> employeeTable;
 
-    // Define the columns in the TableView
+    // Define the columns in the Vehicle TableView
     @FXML
     private TableColumn<Vehicle, Integer> idColumn, mileageColumn, yearColumn, powerColumn, torqueColumn;
     @FXML
@@ -69,6 +70,14 @@ public class MainController {
     @FXML
     private TableColumn<Motorcycle, Boolean> hasABSColumn, isA2CompatibleColumn;
 
+    // Define the columns for Employee TableView
+    @FXML
+    private TableColumn<Employee, Integer> employeeIdColumn;
+    @FXML
+    private TableColumn<Employee, String> firstNameColumn, lastNameColumn, hireDateColumn;
+    @FXML
+    private TableColumn<Employee, Double> commissionColumn;
+
     private void hideCarColumns() {
         numberOfDoorsColumn.setVisible(false);
         driveTypeColumn.setVisible(false);
@@ -84,7 +93,7 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        // Initialize the TableView columns
+        // Initialize the Vehicle TableView columns
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         makeColumn.setCellValueFactory(new PropertyValueFactory<>("make"));
         modelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
@@ -179,6 +188,17 @@ public class MainController {
         vehicleTable.setVisible(false);
         vehicleTable.setManaged(false);
 
+        // Initialize the Employee TableView columns
+        employeeIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        hireDateColumn.setCellValueFactory(new PropertyValueFactory<>("hireDate"));
+        commissionColumn.setCellValueFactory(new PropertyValueFactory<>("commission"));
+
+        // Hide the employee table initially
+        employeeTable.setVisible(false);
+        employeeTable.setManaged(false);
+
         // Set the options for the engine filter
         engineFilter.getItems().addAll("ANY", "PETROL", "DIESEL", "ELECTRIC", "HYBRID");
 
@@ -189,27 +209,28 @@ public class MainController {
         showAllBtn.setOnAction(this::handleShowAll);
         filterBtn.setOnAction(this::handleFilter);
         createOrderBtn.setOnAction(this::handleCreateOrder);
+        showEmployeesBtn.setOnAction(this::showEmployees);
 
         // Load the employees into the ChoiceBox
-        List<String> employees = DatabaseManager.getSalesEmployees();
-        employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
-        employeesChoiceBox.setValue("Select Employee");
+        // List<Employee> employees = DatabaseManager.getEmployees();
+        // employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
+        // employeesChoiceBox.setValue("Select Employee");
 
         // Set the commission field with the choiced employee's commission
-        employeesChoiceBox.setOnAction(event -> {
-            String selectedEmployee = employeesChoiceBox.getValue();
-            if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
-                int index = employees.indexOf(selectedEmployee);
-                List<Integer> commissions = DatabaseManager.getEmployeesCommissions();
-                if (index >= 0 && index < commissions.size()) {
-                    commissionField.setText(String.valueOf(commissions.get(index)) + "%");
-                } else {
-                    commissionField.setText("N/A");
-                }
-            } else {
-                commissionField.setText("N/A");
-            }
-        });
+        // employeesChoiceBox.setOnAction(event -> {
+        // String selectedEmployee = employeesChoiceBox.getValue();
+        // if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
+        // int index = employees.indexOf(selectedEmployee);
+        // List<Integer> commissions = DatabaseManager.getEmployeesCommissions();
+        // if (index >= 0 && index < commissions.size()) {
+        // commissionField.setText(String.valueOf(commissions.get(index)) + "%");
+        // } else {
+        // commissionField.setText("N/A");
+        // }
+        // } else {
+        // commissionField.setText("N/A");
+        // }
+        // });
 
         // Set the vehicle price field with the selected vehicle's id
         vehicleIDField.setOnAction(event -> {
@@ -244,6 +265,10 @@ public class MainController {
     private void handleFilter(ActionEvent event) {
         List<Vehicle> allVehicles = DatabaseManager.getAllVehicles();
 
+        // Hide the employee table
+        employeeTable.setVisible(false);
+        employeeTable.setManaged(false);
+        
         // Filter by vehicle type
         try {
             String selectedType = typeFilter.getValue();
@@ -429,6 +454,17 @@ public class MainController {
     }
 
     @FXML
+    private void showEmployees(ActionEvent event) {
+        employeeTable.setItems(FXCollections.observableArrayList(DatabaseManager.getEmployees()));
+        employeeTable.setVisible(true);
+        employeeTable.setManaged(true);
+
+        // Hide Vehicle Table
+        vehicleTable.setVisible(false);
+        vehicleTable.setManaged(false);
+    }
+
+    @FXML
     private void showAllVehicles() {
         vehicleTable.setItems(FXCollections.observableArrayList(DatabaseManager.getAllVehicles()));
         vehicleTable.setVisible(true);
@@ -437,5 +473,9 @@ public class MainController {
         // Hide Car and Motorcycle specific columns initially
         hideCarColumns();
         hideMotorcycleColumns();
+
+        // Hide Employee Table
+        employeeTable.setVisible(false);
+        employeeTable.setManaged(false);
     }
 }
