@@ -1,0 +1,6 @@
+com\dealerapp\model\Vehicle.class
+com\dealerapp\App.class
+com\dealerapp\model\Motorcycle.class
+com\dealerapp\db\DatabaseManager.class
+com\dealerapp\model\Car.class
+com\dealerapp\controller\MainController.class
