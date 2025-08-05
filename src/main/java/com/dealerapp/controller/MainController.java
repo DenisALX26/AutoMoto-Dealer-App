@@ -7,6 +7,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -149,6 +150,14 @@ public class MainController {
                 totalPriceField.setText(String.valueOf(totalPrice));
             }
         }
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Something went wrong");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     @FXML
@@ -500,27 +509,48 @@ public class MainController {
 
     @FXML
     private void handleCreateOrder(ActionEvent event) {
+        if (vehicleIDField.getText().isEmpty() || customerCNPField.getText().isEmpty() ||
+                employeesChoiceBox.getValue() == null || employeesChoiceBox.getValue().isEmpty() ||
+                vehiclePriceField.getText().isEmpty()) {
+            // Show an error message if any required field is empty
+            showError("Please fill in all required fields.");
+            return;
+        }
         boolean isNewCustomer = newCustomerCheckBox.isSelected();
         String cnp = customerCNPField.getText();
-        int vehicleID = Integer.parseInt(vehicleIDField.getText()),
-                selectedEmployee = DatabaseManager.getEmployeeID(employeesChoiceBox.getValue());
-        double price = Double.parseDouble(vehiclePriceField.getText());
+        int selectedEmployee = DatabaseManager.getEmployeeID(employeesChoiceBox.getValue());
+        double price = Double.parseDouble(totalPriceField.getText());
 
         // Check if the customer is new or existing
         if (!isNewCustomer) {
+            // Check if the customer exists in the database
+            if (!DatabaseManager.checkCustomerExists(cnp)) {
+                showError(cnp + " does not exist in the database. Please create a new customer.");
+                return;
+            }
             // Create order for existing customer
-            DatabaseManager.createOrder(vehicleID, cnp, selectedEmployee, "17-03-2023", "PENDING", price);
+            DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
         } else {
-            // Create new customer
-            String firstName = customerFirstNameField.getText(),
-                    lastName = customerLastNameField.getText(),
-                    email = customerEmailField.getText(),
-                    phone = customerPhoneField.getText();
+            // Check if the customer already exists
+            if (DatabaseManager.checkCustomerExists(cnp)) {
+                showError(cnp + " already exists in the database.");
+                return;
+            }
+            try {
+                // Create order for new customer
+                DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
+                
+                // Create new customer
+                String firstName = customerFirstNameField.getText(),
+                        lastName = customerLastNameField.getText(),
+                        email = customerEmailField.getText(),
+                        phone = customerPhoneField.getText();
 
-            DatabaseManager.createCustomer(cnp, firstName, lastName, email, phone);
-
-            // Create order for new customer
-            DatabaseManager.createOrder(vehicleID, cnp, selectedEmployee, "17-03-2023", "PENDING", price);
+                DatabaseManager.createCustomer(cnp, firstName, lastName, email, phone);
+            } catch (Exception e) {
+                showError("Failed to create new customer: " + e.getMessage());
+                return;
+            }
         }
     }
 

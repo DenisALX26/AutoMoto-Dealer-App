@@ -135,10 +135,10 @@ public class DatabaseManager {
         return employeeID;
     }
 
-    public static void createOrder(int vehicleID, String cnp, int employeeID, String order_date, String status,
+    public static void createOrder(String cnp, int employeeID, String order_date, String status,
             double price) {
-        String query = "INSERT INTO Order_Table (vehicle_id, customer_cnp, employee_id, order_date, order_status, total_amount) VALUES ("
-                + vehicleID + ", '" + cnp + "', " + employeeID + ", TO_DATE('" + order_date + "', 'DD-MM-YYYY'), '"
+        String query = "INSERT INTO Order_Table (customer_cnp, employee_id, order_date, status, total_amount) VALUES ("
+                + "'" + cnp + "', " + employeeID + ", TO_DATE('" + order_date + "', 'YYYY-MM-DD'), '"
                 + status + "', " + price + ")";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
@@ -273,5 +273,19 @@ public class DatabaseManager {
             employeesNames.add(employee.getFirstName() + " " + employee.getLastName());
         }
         return employeesNames;
+    }
+
+    public static boolean checkCustomerExists(String cnp) {
+        String query = "SELECT COUNT(*) FROM CUSTOMER WHERE cnp = " + "'" + cnp + "'";
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
