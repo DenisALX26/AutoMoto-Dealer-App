@@ -536,11 +536,9 @@ public class MainController {
                 showError(cnp + " already exists in the database.");
                 return;
             }
+
+            // Create new customer
             try {
-                // Create order for new customer
-                DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
-                
-                // Create new customer
                 String firstName = customerFirstNameField.getText(),
                         lastName = customerLastNameField.getText(),
                         email = customerEmailField.getText(),
@@ -550,6 +548,13 @@ public class MainController {
             } catch (Exception e) {
                 showError("Failed to create new customer: " + e.getMessage());
                 return;
+            }
+
+            // Create order for new customer
+            try {
+                DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
+            } catch (Exception e) {
+                showError("Failed to create order: " + e.getMessage());
             }
         }
     }
