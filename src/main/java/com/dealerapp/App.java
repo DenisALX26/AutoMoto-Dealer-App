@@ -13,7 +13,7 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1000, 500); // ajustează dimensiunea dacă vrei
+        Scene scene = new Scene(root, 1000, 500);
 
         stage.setTitle("Dealer App");
         stage.setScene(scene);
