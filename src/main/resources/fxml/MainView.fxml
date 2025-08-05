@@ -112,6 +112,7 @@
                   <Button fx:id="showAllBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Vehicles" />
                   <Button fx:id="showEmployeesBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Employees" />
                   <Button fx:id="showCustomersBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Customers" />
+                  <Button fx:id="showOrdersBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Show All Orders" />
                </children>
             </VBox>
             <Region prefWidth="150.0" />
@@ -190,6 +191,19 @@
                   <TableColumn fx:id="customerLastNameColumn" prefWidth="75.0" text="Last Name" />
                   <TableColumn fx:id="customerEmailColumn" prefWidth="75.0" text="Email" />
                   <TableColumn fx:id="customerPhoneColumn" prefWidth="75.0" text="Phone" />
+              </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+            <TableView fx:id="orderTable" prefHeight="200.0" prefWidth="910.0">
+              <columns>
+                <TableColumn fx:id="orderIdColumn" prefWidth="75.0" text="ID" />
+                <TableColumn fx:id="employeeIdOrderColumn" prefWidth="75.0" text="Employee ID" />
+                  <TableColumn fx:id="customerCnpOrderColumn" prefWidth="75.0" text="Customer CNP" />
+                  <TableColumn fx:id="totalPriceColumn" prefWidth="75.0" text="Price" />
+                  <TableColumn fx:id="orderDateColumn" prefWidth="75.0" text="Order Date" />
+                  <TableColumn fx:id="statusColumn" prefWidth="75.0" text="Status" />
               </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

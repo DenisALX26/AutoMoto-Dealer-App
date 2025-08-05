@@ -7,6 +7,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -23,6 +24,7 @@ import com.dealerapp.model.Car;
 import com.dealerapp.model.Customer;
 import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
+import com.dealerapp.model.Order;
 import com.dealerapp.model.Vehicle;
 import com.dealerapp.db.DatabaseManager;
 
@@ -39,7 +41,7 @@ public class MainController {
     @FXML
     private ComboBox<String> engineFilter, typeFilter;
     @FXML
-    private Button showAllBtn, filterBtn, createOrderBtn, showEmployeesBtn, showCustomersBtn;
+    private Button showAllBtn, filterBtn, createOrderBtn, showEmployeesBtn, showCustomersBtn, showOrdersBtn;
     @FXML
     private TableView<Vehicle> vehicleTable;
     @FXML
@@ -50,6 +52,8 @@ public class MainController {
     private TableView<Employee> employeeTable;
     @FXML
     private TableView<Customer> customerTable;
+    @FXML
+    private TableView<Order> orderTable;
 
     // Define the columns in the Vehicle TableView
     @FXML
@@ -86,6 +90,15 @@ public class MainController {
     private TableColumn<Customer, String> customerFirstNameColumn, customerLastNameColumn,
             customerEmailColumn, customerPhoneColumn, customerCnpColumn;
 
+    // Define the columns for Order TableView
+    @FXML
+    private TableColumn<Order, Integer> orderIdColumn, employeeIdOrderColumn;
+    @FXML
+    private TableColumn<Order, String> customerCnpOrderColumn, statusColumn, orderDateColumn;
+    @FXML
+    private TableColumn<Order, Double> totalPriceColumn;
+
+    // Methods to hide specific columns based on vehicle type
     private void hideCarColumns() {
         numberOfDoorsColumn.setVisible(false);
         driveTypeColumn.setVisible(false);
@@ -99,6 +112,7 @@ public class MainController {
         isA2CompatibleColumn.setVisible(false);
     }
 
+    // Methods to hide the Vehicle, Employee, Customer and Order tables
     private void hideVehicleTable() {
         vehicleTable.setVisible(false);
         vehicleTable.setManaged(false);
@@ -112,6 +126,38 @@ public class MainController {
     private void hideCustomerTable() {
         customerTable.setVisible(false);
         customerTable.setManaged(false);
+    }
+
+    private void hideOrderTable() {
+        orderTable.setVisible(false);
+        orderTable.setManaged(false);
+    }
+
+    // Update the total price field based on the vehicle price and employee's
+    // commission
+    private void updateTotalPrice() {
+        if (vehicleIDField.getText() != null && !vehicleIDField.getText().isEmpty()) {
+            int vehicleID = Integer.parseInt(vehicleIDField.getText());
+            double price = DatabaseManager.getVehiclePrice(vehicleID);
+            vehiclePriceField.setText(String.valueOf(price));
+
+            // Set the total price field based on the vehicle price and employee's
+            // commission
+            if (commissionField.getText() != null && !commissionField.getText().isEmpty()) {
+                String commissionText = commissionField.getText().replace("%", "");
+                double commission = Double.parseDouble(commissionText);
+                double totalPrice = price + (price * (commission / 100));
+                totalPriceField.setText(String.valueOf(totalPrice));
+            }
+        }
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Something went wrong");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     @FXML
@@ -230,6 +276,17 @@ public class MainController {
         // Hide the customer table initially
         hideCustomerTable();
 
+        // Initialize the Order TableView columns
+        orderIdColumn.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+        employeeIdOrderColumn.setCellValueFactory(new PropertyValueFactory<>("employeeId"));
+        customerCnpOrderColumn.setCellValueFactory(new PropertyValueFactory<>("customerCnp"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        orderDateColumn.setCellValueFactory(new PropertyValueFactory<>("orderDate"));
+        totalPriceColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
+
+        // Hide the order table initially
+        hideOrderTable();
+
         // Set the options for the engine filter
         engineFilter.getItems().addAll("ANY", "PETROL", "DIESEL", "ELECTRIC", "HYBRID");
 
@@ -242,44 +299,34 @@ public class MainController {
         createOrderBtn.setOnAction(this::handleCreateOrder);
         showEmployeesBtn.setOnAction(this::showEmployees);
         showCustomersBtn.setOnAction(this::showCustomers);
+        showOrdersBtn.setOnAction(this::showOrders);
 
         // Load the employees into the ChoiceBox
-        // List<Employee> employees = DatabaseManager.getEmployees();
-        // employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
-        // employeesChoiceBox.setValue("Select Employee");
+        List<String> employees = DatabaseManager.getEmployeesNames();
+        employeesChoiceBox.setItems(FXCollections.observableArrayList(employees));
+        employeesChoiceBox.setValue("Select Employee");
 
         // Set the commission field with the choiced employee's commission
-        // employeesChoiceBox.setOnAction(event -> {
-        // String selectedEmployee = employeesChoiceBox.getValue();
-        // if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
-        // int index = employees.indexOf(selectedEmployee);
-        // List<Integer> commissions = DatabaseManager.getEmployeesCommissions();
-        // if (index >= 0 && index < commissions.size()) {
-        // commissionField.setText(String.valueOf(commissions.get(index)) + "%");
-        // } else {
-        // commissionField.setText("N/A");
-        // }
-        // } else {
-        // commissionField.setText("N/A");
-        // }
-        // });
+        employeesChoiceBox.setOnAction(event -> {
+            String selectedEmployee = employeesChoiceBox.getValue();
+            if (selectedEmployee != null && !selectedEmployee.isEmpty()) {
+                int index = employees.indexOf(selectedEmployee);
+                List<Double> commissions = DatabaseManager.getEmployeesCommissions();
+                if (index >= 0 && index < commissions.size()) {
+                    commissionField.setText(String.valueOf(commissions.get(index)) + "%");
+                    // Update the total price field based on the selected employee's commission
+                    updateTotalPrice();
+                } else {
+                    commissionField.setText("N/A");
+                }
+            } else {
+                commissionField.setText("N/A");
+            }
+        });
 
         // Set the vehicle price field with the selected vehicle's id
         vehicleIDField.setOnAction(event -> {
-            if (vehicleIDField.getText() != null && !vehicleIDField.getText().isEmpty()) {
-                int vehicleID = Integer.parseInt(vehicleIDField.getText());
-                double price = DatabaseManager.getVehiclePrice(vehicleID);
-                vehiclePriceField.setText(String.valueOf(price));
-
-                // Set the total price field based on the vehicle price and employee's
-                // commission
-                if (commissionField.getText() != null && !commissionField.getText().isEmpty()) {
-                    String commissionText = commissionField.getText().replace("%", "");
-                    double commission = Double.parseDouble(commissionText);
-                    double totalPrice = price + (price * (commission / 100));
-                    totalPriceField.setText(String.valueOf(totalPrice));
-                }
-            }
+            updateTotalPrice();
         });
 
         // Set the focus on the "Show All" button when the application starts
@@ -297,9 +344,10 @@ public class MainController {
     private void handleFilter(ActionEvent event) {
         List<Vehicle> allVehicles = DatabaseManager.getAllVehicles();
 
-        // Hide the employee and customer table
+        // Hide Tables
         hideEmployeeTable();
         hideCustomerTable();
+        hideOrderTable();
 
         // Filter by vehicle type
         try {
@@ -461,27 +509,48 @@ public class MainController {
 
     @FXML
     private void handleCreateOrder(ActionEvent event) {
+        if (vehicleIDField.getText().isEmpty() || customerCNPField.getText().isEmpty() ||
+                employeesChoiceBox.getValue() == null || employeesChoiceBox.getValue().isEmpty() ||
+                vehiclePriceField.getText().isEmpty()) {
+            // Show an error message if any required field is empty
+            showError("Please fill in all required fields.");
+            return;
+        }
         boolean isNewCustomer = newCustomerCheckBox.isSelected();
         String cnp = customerCNPField.getText();
-        int vehicleID = Integer.parseInt(vehicleIDField.getText()),
-                selectedEmployee = DatabaseManager.getEmployeeID(employeesChoiceBox.getValue());
-        double price = Double.parseDouble(vehiclePriceField.getText());
+        int selectedEmployee = DatabaseManager.getEmployeeID(employeesChoiceBox.getValue());
+        double price = Double.parseDouble(totalPriceField.getText());
 
         // Check if the customer is new or existing
         if (!isNewCustomer) {
+            // Check if the customer exists in the database
+            if (!DatabaseManager.checkCustomerExists(cnp)) {
+                showError(cnp + " does not exist in the database. Please create a new customer.");
+                return;
+            }
             // Create order for existing customer
-            DatabaseManager.createOrder(vehicleID, cnp, selectedEmployee, "17-03-2023", "PENDING", price);
+            DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
         } else {
-            // Create new customer
-            String firstName = customerFirstNameField.getText(),
-                    lastName = customerLastNameField.getText(),
-                    email = customerEmailField.getText(),
-                    phone = customerPhoneField.getText();
+            // Check if the customer already exists
+            if (DatabaseManager.checkCustomerExists(cnp)) {
+                showError(cnp + " already exists in the database.");
+                return;
+            }
+            try {
+                // Create order for new customer
+                DatabaseManager.createOrder(cnp, selectedEmployee, "2023-03-17", "PENDING", price);
+                
+                // Create new customer
+                String firstName = customerFirstNameField.getText(),
+                        lastName = customerLastNameField.getText(),
+                        email = customerEmailField.getText(),
+                        phone = customerPhoneField.getText();
 
-            DatabaseManager.createCustomer(cnp, firstName, lastName, email, phone);
-
-            // Create order for new customer
-            DatabaseManager.createOrder(vehicleID, cnp, selectedEmployee, "17-03-2023", "PENDING", price);
+                DatabaseManager.createCustomer(cnp, firstName, lastName, email, phone);
+            } catch (Exception e) {
+                showError("Failed to create new customer: " + e.getMessage());
+                return;
+            }
         }
     }
 
@@ -491,7 +560,8 @@ public class MainController {
         employeeTable.setVisible(true);
         employeeTable.setManaged(true);
 
-        // Hide Vehicle Table
+        // Hide Tables
+        hideOrderTable();
         hideVehicleTable();
         hideCustomerTable();
     }
@@ -506,9 +576,10 @@ public class MainController {
         hideCarColumns();
         hideMotorcycleColumns();
 
-        // Hide Employee and Customer Table
+        // Hide Tables
         hideEmployeeTable();
         hideCustomerTable();
+        hideOrderTable();
     }
 
     @FXML
@@ -517,10 +588,21 @@ public class MainController {
         customerTable.setVisible(true);
         customerTable.setManaged(true);
 
-        // Hide Vehicle Table
+        // Hide Tables
         hideVehicleTable();
-
-        // Hide Employee Table
         hideEmployeeTable();
+        hideOrderTable();
+    }
+
+    @FXML
+    private void showOrders(ActionEvent event) {
+        orderTable.setItems(FXCollections.observableArrayList(DatabaseManager.getAllOrders()));
+        orderTable.setVisible(true);
+        orderTable.setManaged(true);
+
+        // Hide Tables
+        hideVehicleTable();
+        hideEmployeeTable();
+        hideCustomerTable();
     }
 }

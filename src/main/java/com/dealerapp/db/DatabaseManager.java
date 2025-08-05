@@ -8,6 +8,7 @@ import com.dealerapp.model.Car;
 import com.dealerapp.model.Customer;
 import com.dealerapp.model.Employee;
 import com.dealerapp.model.Motorcycle;
+import com.dealerapp.model.Order;
 import com.dealerapp.model.Vehicle;
 
 public class DatabaseManager {
@@ -83,16 +84,16 @@ public class DatabaseManager {
         return employees;
     }
 
-    public static List<Integer> getEmployeesCommissions() {
-        List<Integer> commissions = new ArrayList<>();
+    public static List<Double> getEmployeesCommissions() {
+        List<Double> commissions = new ArrayList<>();
 
-        String query = "SELECT commission FROM EMPLOYEE WHERE job_title = 'SALES'";
+        String query = "SELECT commission FROM EMPLOYEE order by id";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             while (resultSet.next()) {
-                commissions.add(resultSet.getInt("commission"));
+                commissions.add(resultSet.getDouble("commission"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -134,10 +135,10 @@ public class DatabaseManager {
         return employeeID;
     }
 
-    public static void createOrder(int vehicleID, String cnp, int employeeID, String order_date, String status,
+    public static void createOrder(String cnp, int employeeID, String order_date, String status,
             double price) {
-        String query = "INSERT INTO Order_Table (vehicle_id, customer_cnp, employee_id, order_date, order_status, total_amount) VALUES ("
-                + vehicleID + ", '" + cnp + "', " + employeeID + ", TO_DATE('" + order_date + "', 'DD-MM-YYYY'), '"
+        String query = "INSERT INTO Order_Table (customer_cnp, employee_id, order_date, status, total_amount) VALUES ("
+                + "'" + cnp + "', " + employeeID + ", TO_DATE('" + order_date + "', 'YYYY-MM-DD'), '"
                 + status + "', " + price + ")";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
@@ -240,5 +241,51 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return customers;
+    }
+
+    public static List<Order> getAllOrders() {
+        List<Order> orders = new ArrayList<>();
+        String query = "SELECT * FROM Order_Table ORDER BY id";
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            while (resultSet.next()) {
+                Order order = new Order(
+                        resultSet.getInt("id"),
+                        resultSet.getInt("employee_id"),
+                        resultSet.getString("customer_cnp"),
+                        resultSet.getString("status"),
+                        resultSet.getString("order_date"),
+                        resultSet.getDouble("total_amount"));
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public static List<String> getEmployeesNames() {
+        List<String> employeesNames = new ArrayList<>();
+        List<Employee> employees = getEmployees();
+        for (Employee employee : employees) {
+            employeesNames.add(employee.getFirstName() + " " + employee.getLastName());
+        }
+        return employeesNames;
+    }
+
+    public static boolean checkCustomerExists(String cnp) {
+        String query = "SELECT COUNT(*) FROM CUSTOMER WHERE cnp = " + "'" + cnp + "'";
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASS);
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
